@@ -1,40 +1,36 @@
-// import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
-// import { Customer } from '../entities/customer.entity';
-// import { CreateCustomerDto, UpdateCustomerDto } from '../dtos/customer.dto';
-// import { InjectRepository } from '@nestjs/typeorm';
-// import { Repository } from 'typeorm';
+import { Customer } from '../entities/customer.entity';
+import { CreateCustomerDto, UpdateCustomerDto } from '../dtos/customer.dto';
 
-// @Injectable()
-// export class CustomersService {
-//   constructor(
-//     @InjectRepository(Customer) private customerRepo: Repository<Customer>,
-//   ) {}
+@Injectable()
+export class CustomersService {
+  constructor(
+    @InjectModel(Customer.name) private customerModel: Model<Customer>,
+  ) {}
 
-//   async findAll() {
-//     return await this.customerRepo.find();
-//   }
+  findAll() {
+    return this.customerModel.find().exec();
+  }
 
-//   async findOne(id: number) {
-//     const customer = await this.customerRepo.findOne({ where: { id } });
-//     if (!customer) {
-//       throw new NotFoundException(`Customer #${id} not found`);
-//     }
-//     return customer;
-//   }
+  async findOne(id: string) {
+    return this.customerModel.findById(id);
+  }
 
-//   create(data: CreateCustomerDto) {
-//     const newCostumer = this.customerRepo.create(data);
-//     return this.customerRepo.save(newCostumer);
-//   }
+  create(data: CreateCustomerDto) {
+    const newModel = new this.customerModel(data);
+    return newModel.save();
+  }
 
-//   async update(id: number, changes: UpdateCustomerDto) {
-//     const customer = await this.findOne(id);
-//     this.customerRepo.merge(customer, changes);
-//     return this.customerRepo.save(customer);
-//   }
+  update(id: string, changes: UpdateCustomerDto) {
+    return this.customerModel
+      .findByIdAndUpdate(id, { $set: changes }, { new: true })
+      .exec();
+  }
 
-//   remove(id: number) {
-//     return this.customerRepo.delete(id);
-//   }
-// }
+  remove(id: string) {
+    return this.customerModel.findByIdAndDelete(id);
+  }
+}

@@ -1,62 +1,49 @@
-// import { Injectable, NotFoundException } from '@nestjs/common';
-// import { InjectRepository } from '@nestjs/typeorm';
-// import { Repository } from 'typeorm';
-// import { ConfigService } from '@nestjs/config';
+import { Injectable, Inject } from '@nestjs/common';
+import { Db } from 'mongodb';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
-// import { User } from '../entities/user.entity';
-// import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
+import { User } from '../entities/user.entity';
+import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
+import { ProductsService } from '../../products/services/products.service';
 
-// import { ProductsService } from './../../products/services/products.service';
-// // import { CustomersService } from './customers.service';
+@Injectable()
+export class UsersService {
+  constructor(
+    private productsService: ProductsService,
+    @InjectModel(User.name) private userModel: Model<User>,
+  ) {}
 
-// @Injectable()
-// export class UsersService {
-//   constructor(
-//     // private productsService: ProductsService,
-//     private configService: ConfigService,
-//   ) // @InjectRepository(User) private userRepo: Repository<User>,
-//   // private customersService: CustomersService,
-//   {}
+  findAll() {
+    return this.userModel.find().exec();
+  }
 
-//   findAll() {
-//     return this.userRepo.find({
-//       relations: ['customer'],
-//     });
-//   }
+  async findOne(id: string) {
+    return this.userModel.findById(id);
+  }
 
-//   async findOne(id: number) {
-//     const user = await this.userRepo.findOne({ where: { id } });
-//     if (!user) {
-//       throw new NotFoundException(`User #${id} not found`);
-//     }
-//     return user;
-//   }
+  async getOrdersByUser(userId: string) {
+    const user = await this.findOne(userId);
+    return {
+      date: new Date(),
+      user,
+      // products: this.productsService.findAll(),
+      products: [],
+    };
+  }
 
-//   async create(data: CreateUserDto) {
-//     const newUser = this.userRepo.create(data);
-//     // if (data.customerId) {
-//     //   const customer = await this.customersService.findOne(data.customerId);
-//     //   newUser.customer = customer;
-//     // }
-//     return this.userRepo.save(newUser);
-//   }
+  create(data: CreateUserDto) {
+    const newModel = new this.userModel(data);
+    return newModel.save();
+  }
 
-//   async update(id: number, changes: UpdateUserDto) {
-//     const user = await this.findOne(id);
-//     this.userRepo.merge(user, changes);
-//     return this.userRepo.save(user);
-//   }
+  update(id: string, changes: UpdateUserDto) {
+    return this.userModel
+      .findByIdAndUpdate(id, { $set: changes }, { new: true })
+      .exec();
+  }
 
-//   remove(id: number) {
-//     return this.userRepo.delete(id);
-//   }
-
-//   async getOrderByUser(id: number) {
-//     const user = this.findOne(id);
-//     return {
-//       date: new Date(),
-//       user,
-//       products: await this.productsService.findAll(),
-//     };
-//   }
-// }
+  remove(id: string) {
+    return this.userModel.findByIdAndDelete(id);
+  }
+}
