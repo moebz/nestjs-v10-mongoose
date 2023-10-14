@@ -29,7 +29,7 @@ export class Category {
   })
   updateAt: Date;
 
-  @ManyToMany(() => Product, (product) => product.categories)
-  @JoinTable() // Solo debe estar en una entidad
-  products: Product[];
+  // @ManyToMany(() => Product, (product) => product.categories)
+  // @JoinTable() // Solo debe estar en una entidad
+  // products: Product[];
 }

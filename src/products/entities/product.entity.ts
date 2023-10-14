@@ -1,66 +1,23 @@
-import {
-  PrimaryGeneratedColumn,
-  Column,
-  Entity,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  ManyToMany,
-  JoinTable,
-  Index,
-  JoinColumn,
-} from 'typeorm';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
-import { Brand } from './brand.entity';
-import { Category } from './category.entity';
-
-@Entity({ name: 'products' })
-@Index(['price', 'stock'])
-export class Product {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ type: 'varchar', length: 255, unique: true })
+@Schema()
+export class Product extends Document {
+  @Prop({ required: true })
   name: string;
 
-  @Column({ type: 'text' })
+  @Prop()
   description: string;
 
-  @Index()
-  @Column({ type: 'int' })
+  @Prop({ type: Number, index: true })
   price: number;
 
-  @Column({ type: 'int' })
+  @Prop({ type: Number })
   stock: number;
 
-  @Column({ type: 'varchar' })
+  @Prop()
   image: string;
-
-  @CreateDateColumn({
-    name: 'create_at',
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createAt: Date;
-
-  @UpdateDateColumn({
-    name: 'update_at',
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updateAt: Date;
-
-  @ManyToOne(() => Brand, (brand) => brand.products)
-  @JoinColumn({ name: 'brand_id' })
-  brand: Brand;
-
-  @ManyToMany(() => Category, (category) => category.products)
-  @JoinTable({
-    name: 'products_categories',
-    joinColumn: { name: 'product_id' },
-    inverseJoinColumn: {
-      name: 'category:id',
-    },
-  })
-  categories: Category[];
 }
+
+export const ProductSchema = SchemaFactory.createForClass(Product);
+ProductSchema.index({ price: 1, stock: -1 });

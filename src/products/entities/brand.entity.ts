@@ -32,6 +32,6 @@ export class Brand {
   })
   updateAt: Date;
 
-  @OneToMany(() => Product, (product) => product.brand)
-  products: Product[];
+  // @OneToMany(() => Product, (product) => product.brand)
+  // products: Product[];
 }
